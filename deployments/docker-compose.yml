@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=blockchain_integration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://api:8080
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=blockchain_integration
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:6
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:6.2.0
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.0
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    restart: unless-stopped
+
+volumes:
+  postgres_data: {}
+
+# Human Tasks:
+# - Add health checks for each service to ensure they're running correctly
+# - Implement proper logging configuration for each service
+# - Add volume mounts for persistent data in Redis and Kafka
+# - Implement proper security measures (e.g., secrets management for passwords)
+# - Add configuration for scaling services (e.g., multiple API instances)
+# - Implement monitoring and metrics collection (e.g., Prometheus, Grafana)
+# - Add service for running database migrations
+# - Implement proper network configuration for service isolation
+# - Add configuration for different environments (dev, staging, prod)
+# - Implement backup and restore procedures for stateful services
