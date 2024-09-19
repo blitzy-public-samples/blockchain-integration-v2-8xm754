@@ -1,0 +1,54 @@
+{
+  "compilerOptions": {
+    // Specify ECMAScript target version
+    "target": "es5",
+    // List of library files to be included in the compilation
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    // Allow JavaScript files to be compiled
+    "allowJs": true,
+    // Skip type checking of declaration files
+    "skipLibCheck": true,
+    // Enables emit interoperability between CommonJS and ES Modules
+    "esModuleInterop": true,
+    // Allow default imports from modules with no default export
+    "allowSyntheticDefaultImports": true,
+    // Enable all strict type checking options
+    "strict": true,
+    // Disallow inconsistently-cased references to the same file
+    "forceConsistentCasingInFileNames": true,
+    // Report errors for fallthrough cases in switch statements
+    "noFallthroughCasesInSwitch": true,
+    // Specify module code generation
+    "module": "esnext",
+    // Specify module resolution strategy
+    "moduleResolution": "node",
+    // Include modules imported with .json extension
+    "resolveJsonModule": true,
+    // Ensure that each file can be safely transpiled without relying on other imports
+    "isolatedModules": true,
+    // Do not emit output (only perform type checking)
+    "noEmit": true,
+    // Support JSX in .tsx files
+    "jsx": "react-jsx"
+  },
+  // Specifies a list of glob patterns that match files to be included in compilation
+  "include": [
+    "src"
+  ]
+}
+
+// Human tasks:
+// TODO: Review and update the TypeScript target based on browser support requirements
+// TODO: Consider enabling strictNullChecks for improved type safety
+// TODO: Evaluate the need for strictPropertyInitialization and enable if appropriate
+// TODO: Consider adding paths configuration for module aliasing
+// TODO: Review and possibly extend the 'include' and add 'exclude' patterns
+// TODO: Consider enabling sourceMap for better debugging experience
+// TODO: Evaluate the need for declaration file generation (declaration and declarationDir options)
+// TODO: Consider adding noUnusedLocals and noUnusedParameters for code cleanliness
+// TODO: Review the moduleResolution strategy and update if necessary
+// TODO: Consider adding types array to specify type declaration files
