@@ -1,0 +1,53 @@
+# Prometheus configuration for blockchain integration service monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+rule_files:
+  - /etc/prometheus/rules/*.rules
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'backend'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:8080']
+
+  - job_name: 'frontend'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['frontend:80']
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+# Human tasks:
+# - Add authentication for Prometheus if it's exposed externally
+# - Implement service discovery for dynamic target configuration
+# - Add more detailed scrape configurations for each service
+# - Implement relabeling to add custom labels to metrics
+# - Configure remote write/read for long-term storage
+# - Add alerting rules for critical service metrics
+# - Implement recording rules for frequently used queries
+# - Configure federation if multiple Prometheus instances are used
+# - Add job for monitoring Kubernetes cluster if applicable
+# - Implement proper retention and storage configuration
