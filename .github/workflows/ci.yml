@@ -1,0 +1,84 @@
+# Blockchain Integration Service CI
+
+name: Blockchain Integration Service CI
+
+# Trigger the workflow on push or pull request events
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: go test ./...
+
+      - name: Run integration tests
+        run: go test ./tests/integration/...
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+
+      - name: Build backend
+        run: go build -o blockchain-integration-service ./cmd/api
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+# Human tasks:
+# - Add code coverage reporting and upload to a service like Codecov
+# - Implement caching for Go modules and npm packages to speed up builds
+# - Add a job for security scanning (e.g., using Snyk or OWASP Dependency-Check)
+# - Implement end-to-end testing job using a tool like Cypress
+# - Add a job for building and pushing Docker images
+# - Implement branch protection rules in GitHub to require CI passage before merging
+# - Add performance testing job to catch potential performance regressions
+# - Implement parallel test execution to speed up the CI pipeline
+# - Add notifications for CI failures (e.g., Slack, email)
+# - Implement artifact uploading for built binaries and frontend assets
