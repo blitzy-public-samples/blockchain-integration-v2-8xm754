@@ -1,0 +1,48 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Human tasks:
+# - Review and update the list of ignored files and directories as the project evolves
+# - Consider adding patterns for language-specific temporary or build files
+# - Ensure that no sensitive information (like API keys or credentials) is accidentally tracked
+# - Add patterns for local configuration files that shouldn't be shared
+# - Consider adding patterns for log files if not already covered
+# - Review and possibly include the vendor directory if dependency vendoring is used
+# - Add patterns for any additional IDE or text editor specific files
+# - Consider adding patterns for any temporary files created by your build or test processes
+# - Ensure that large binary files or datasets are properly ignored
+# - Regularly clean up and remove any obsolete patterns
