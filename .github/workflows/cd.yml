@@ -1,0 +1,94 @@
+# Blockchain Integration Service CD
+
+name: Blockchain Integration Service CD
+
+# Trigger the workflow on push to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# Environment variables
+env:
+  DOCKER_REGISTRY: your-docker-registry.com
+  K8S_NAMESPACE: blockchain-integration
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Set up Docker Buildx for multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # Log in to the Docker registry
+      - name: Login to Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build and push the backend Docker image
+      - name: Build and push backend image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: true
+          tags: ${{ env.DOCKER_REGISTRY }}/backend:${{ github.sha }}
+
+      # Build and push the frontend Docker image
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_REGISTRY }}/frontend:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Kubernetes
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Set up kubectl for Kubernetes deployment
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
+
+      # Configure kubectl with the Kubernetes config
+      - name: Configure kubectl
+        run: echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig.yaml
+
+      # Update Kubernetes deployments with new image tags
+      - name: Update Kubernetes deployments
+        run: |
+          kubectl --kubeconfig=./kubeconfig.yaml set image deployment/backend backend=${{ env.DOCKER_REGISTRY }}/backend:${{ github.sha }} -n ${{ env.K8S_NAMESPACE }}
+          kubectl --kubeconfig=./kubeconfig.yaml set image deployment/frontend frontend=${{ env.DOCKER_REGISTRY }}/frontend:${{ github.sha }} -n ${{ env.K8S_NAMESPACE }}
+
+      # Verify the deployment status
+      - name: Verify deployment
+        run: |
+          kubectl --kubeconfig=./kubeconfig.yaml rollout status deployment/backend -n ${{ env.K8S_NAMESPACE }}
+          kubectl --kubeconfig=./kubeconfig.yaml rollout status deployment/frontend -n ${{ env.K8S_NAMESPACE }}
+
+# Human tasks:
+# - Implement staging deployment before production
+# - Add automated database migration step
+# - Implement canary or blue-green deployment strategy
+# - Add post-deployment health checks and monitoring
+# - Implement rollback mechanism in case of deployment failure
+# - Add notifications for successful/failed deployments (e.g., Slack)
+# - Implement secrets management for sensitive data
+# - Add performance testing step before production deployment
+# - Implement automatic scaling based on deployment metrics
+# - Add change log generation and release notes creation
