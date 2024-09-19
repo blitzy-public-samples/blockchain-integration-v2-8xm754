@@ -1,0 +1,88 @@
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: your-registry/blockchain-integration-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DB_HOST
+          value: postgres-service
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: password
+        - name: REDIS_HOST
+          value: redis-service
+        - name: KAFKA_BROKERS
+          value: kafka-service:9092
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+---
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP
+
+# Human Tasks:
+# - Implement proper resource limits and requests based on actual usage patterns
+# - Add horizontal pod autoscaling (HPA) configuration
+# - Implement network policies for securing communication between services
+# - Add configuration for persistent volumes if needed (e.g., for local file storage)
+# - Implement proper logging and monitoring configurations
+# - Add Ingress resource for internal routing if needed
+# - Implement proper security context for the container (e.g., non-root user)
+# - Add configuration for additional secrets (e.g., API keys for blockchain networks)
+# - Implement readiness and liveness probes with appropriate thresholds
+# - Add annotations for Prometheus monitoring
