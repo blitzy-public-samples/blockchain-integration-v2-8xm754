@@ -1,0 +1,80 @@
+---
+# Redis StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:6.2-alpine
+        ports:
+        - containerPort: 6379
+        command: ["redis-server", "--appendonly", "yes"]
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 5Gi
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis
+  ports:
+  - protocol: TCP
+    port: 6379
+    targetPort: 6379
+  type: ClusterIP
+
+# Human Tasks:
+# - Implement proper backup and restore procedures for Redis data
+# - Add configuration for Redis clustering if high availability is required
+# - Implement proper monitoring and alerting for Redis health and performance
+# - Add configuration for Redis password authentication
+# - Implement proper security measures (e.g., network policies, encryption in transit)
+# - Add configuration for Redis persistence options (RDB snapshots, AOF)
+# - Implement proper logging configuration for Redis
+# - Add resource limits and requests based on actual usage patterns
+# - Implement proper storage class selection for the persistent volume
+# - Add annotations for Prometheus monitoring of Redis metrics
