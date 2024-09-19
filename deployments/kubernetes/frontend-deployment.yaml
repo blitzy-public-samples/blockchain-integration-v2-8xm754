@@ -1,0 +1,73 @@
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: your-registry/blockchain-integration-frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: API_URL
+          value: "http://backend-service:8080"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+
+---
+# Human Tasks:
+# - Implement proper resource limits and requests based on actual usage patterns
+# - Add horizontal pod autoscaling (HPA) configuration
+# - Implement network policies for securing communication between services
+# - Add configuration for persistent volumes if needed (e.g., for user uploads)
+# - Implement proper logging and monitoring configurations
+# - Add Ingress resource for routing external traffic
+# - Implement proper security context for the container (e.g., non-root user)
+# - Add configuration for secrets management (e.g., for API keys)
+# - Implement readiness and liveness probes with appropriate thresholds
+# - Add annotations for Prometheus monitoring
